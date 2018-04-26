@@ -40,7 +40,7 @@ public class Cell {
 
     /**
      *
-     * @param quantity 
+     * @param quantity
      */
     public void setQuantity(double quantity) {
         this.quantity = quantity;
