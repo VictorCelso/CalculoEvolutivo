@@ -21,6 +21,10 @@ public class CalculoEvolutivo {
     public static void main(String[] args) {
         doTheEvolution = Evolve.getInstance();
         List<Cell> pop = new ArrayList<>();
+        while((doTheEvolution.getParentFitness()-doTheEvolution.getFitness())<0.2){
+            pop=doTheEvolution.generatePop(pop);
+            doTheEvolution.showPopulation(pop);
+        }
         
         
     }

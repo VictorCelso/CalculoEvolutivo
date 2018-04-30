@@ -47,27 +47,59 @@ public class Evolve {
 
     /**
      *
+     * @param population
      * @return a população gerada
      */
     public List<Cell> generatePop(List<Cell> population) {
         List<Cell> pop = new ArrayList<>();
+        parentFitness = fitness;
         if (population.isEmpty()) {
+            System.out.println("Iniciando população");
             cellsPop = 0;
             for (int x = 0; x <= 20; x++) {
                 Cell unity = new Cell();
                 unity.setValue(x);
-                unity.setQuantity(evaluate(x - 10));
+                unity.setQuantity(Math.abs(evaluate(x - 10)));
                 cellsPop += unity.getQuantity();
                 population.add(unity);
             }
-            population.forEach(cell->{
+            population.forEach(cell -> {
                 cell.setWeight(cellWeight(cell.getQuantity()));
             });
             return population;
+        } else if(parentFitness==0) {
+            System.out.println("Criando primeira população");
+            population.forEach((Cell cell) -> {
+                if (pop.size() == 100) {
+
+                } else {
+                    int i=0;
+                    while(i<(cell.getWeight()*100)){
+                        fitness=cell.getQuantity();
+                        pop.add(cell);
+                        i++;
+                    }
+                    System.out.println(i);
+                }
+            });
+            fitness =fitness/pop.size();
+            System.out.println(fitness);
         }else{
+            System.out.println("Criando proxima geração");
+            
             
         }
         return pop;
+    }
+    
+    public void showPopulation(List<Cell> pop){
+        System.out.println("---Inicio geração---");
+        pop.forEach(unity->{
+            System.out.println("Valor: "+unity.getValue()+" avaliação:"+
+                    unity.getQuantity()+" probabilidade: "+unity.getWeight());
+        });
+        System.out.println("Fitness: "+fitness);
+        System.out.println("===Fim geração===");
     }
 
     /**
