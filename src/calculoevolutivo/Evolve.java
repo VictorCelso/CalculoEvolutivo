@@ -5,8 +5,14 @@
  */
 package calculoevolutivo;
 
+import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -18,6 +24,7 @@ public class Evolve {
     private double parentFitness;
     private double fitness;
     private double cellsPop;
+    double variacao=0;
 
     public static Evolve getInstance() {
         if (instance == null) {
@@ -67,38 +74,102 @@ public class Evolve {
                 cell.setWeight(cellWeight(cell.getQuantity()));
             });
             return population;
-        } else if(parentFitness==0) {
+        } else if (parentFitness == 0) {
             System.out.println("Criando primeira população");
             population.forEach((Cell cell) -> {
-                if (pop.size() == 100) {
 
-                } else {
-                    int i=0;
-                    while(i<(cell.getWeight()*100)){
-                        fitness=cell.getQuantity();
+                int i = 0;
+                while (i < (cell.getWeight() * 100)) {
+                    if (pop.size() == 100) {
+                        break;
+                    } else {
+                        fitness = cell.getQuantity();
                         pop.add(cell);
                         i++;
                     }
-                    System.out.println(i);
                 }
+//                    System.out.println(i);
+
             });
-            fitness =fitness/pop.size();
+            fitness = fitness / pop.size();
             System.out.println(fitness);
-        }else{
+        } else {
             System.out.println("Criando proxima geração");
-            
-            
+//            System.out.println(population.size());
+            Random r = new Random();
+            byte[] unity1, unity2;
+            int pos;
+            while (population.size() >= 10) {
+                if (population.size() == 0) {
+                    pos = 0;
+                } else {
+                    pos = r.nextInt(population.size());
+                }
+                ByteBuffer bb = ByteBuffer.allocate(Integer.BYTES);
+                bb.order(ByteOrder.BIG_ENDIAN);
+                bb.putInt(population.get(pos).getValue());
+                unity1 = bb.array();
+//                System.out.println(bb.wrap(unity1).getInt());
+                population.remove(pos);
+                if (population.size() == 0) {
+                    pos = 0;
+                } else {
+                    pos = r.nextInt(population.size());
+                }
+                bb = ByteBuffer.allocate(Integer.BYTES);
+                bb.order(ByteOrder.BIG_ENDIAN);
+                bb.putInt(population.get(pos).getValue());
+                unity2 = bb.array();
+                population.remove(pos);
+//                System.out.println(bb.wrap(unity2).getInt());
+                for (int i = 0; i < 2; i++) {
+                    pos = r.nextInt(4);
+                    byte aux = unity1[pos];
+                    unity1[pos] = unity2[pos];
+                    unity2[pos] = aux;
+                }
+                Cell unity = new Cell();
+                unity.setValue(bb.wrap(unity1).getInt());
+                unity.setQuantity(Math.abs(evaluate(unity.getValue() - 10)));
+                cellsPop += unity.getQuantity();
+                pop.add(unity);
+                unity = new Cell();
+                unity.setValue(bb.wrap(unity2).getInt());
+                unity.setQuantity(Math.abs(evaluate(unity.getValue() - 10)));
+                cellsPop += unity.getQuantity();
+                pop.add(unity);
+            }
+            pop.forEach(cell -> {
+                cell.setWeight(cellWeight(cell.getQuantity()));
+            });
+            parentFitness = fitness;
+//            System.out.println(cellsPop);
+//            System.out.println(pop.size());
+            fitness = cellsPop / pop.size();
         }
-        return pop;
+
+        if (pop.isEmpty()) {
+            return population;
+        } else {
+            return pop;
+        }
     }
     
-    public void showPopulation(List<Cell> pop){
-        System.out.println("---Inicio geração---");
-        pop.forEach(unity->{
-            System.out.println("Valor: "+unity.getValue()+" avaliação:"+
-                    unity.getQuantity()+" probabilidade: "+unity.getWeight());
+    public double desvioPadrão(List<Cell> pop){
+        pop.forEach(cell->{
+            variacao =variacao+Math.pow(cell.getQuantity()-fitness, 2);
         });
-        System.out.println("Fitness: "+fitness);
+        variacao=variacao/pop.size();
+        return Math.sqrt(variacao);
+    }
+
+    public void showPopulation(List<Cell> pop) {
+        System.out.println("---Inicio geração---");
+        pop.forEach(unity -> {
+            System.out.println("Valor: " + unity.getValue() + " avaliação:"
+                    + unity.getQuantity() + " probabilidade: " + unity.getWeight());
+        });
+        System.out.println("Fitness: " + fitness);
         System.out.println("===Fim geração===");
     }
 

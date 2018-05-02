@@ -24,6 +24,7 @@ public class CalculoEvolutivo {
         while((doTheEvolution.getParentFitness()-doTheEvolution.getFitness())<0.2){
             pop=doTheEvolution.generatePop(pop);
             doTheEvolution.showPopulation(pop);
+            System.out.println("Desvio padrão: "+doTheEvolution.desvioPadrão(pop));
         }
         
         
