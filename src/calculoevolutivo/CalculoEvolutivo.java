@@ -21,10 +21,12 @@ public class CalculoEvolutivo {
     public static void main(String[] args) {
         doTheEvolution = Evolve.getInstance();
         List<Cell> pop = new ArrayList<>();
-        while((doTheEvolution.getParentFitness()-doTheEvolution.getFitness())<0.2){
+        int generations=0;
+        while(generations<51){
             pop=doTheEvolution.generatePop(pop);
             doTheEvolution.showPopulation(pop);
             System.out.println("Desvio padrão: "+doTheEvolution.desvioPadrão(pop));
+            generations++;
         }
         
         

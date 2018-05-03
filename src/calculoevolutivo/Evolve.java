@@ -5,12 +5,9 @@
  */
 package calculoevolutivo;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -40,7 +37,7 @@ public class Evolve {
      * @see Cell
      */
     public double cellWeight(double quantity) {
-        return quantity / cellsPop;
+        return -(quantity / cellsPop);
     }
 
     /**
@@ -49,7 +46,7 @@ public class Evolve {
      * @return a avaliação de cada individuo {@link Cell}
      */
     public double evaluate(int x) {
-        return -(Math.pow(3 * x, 4) - Math.pow(20 * x, 3) + Math.pow(42 * x, 2) - (36 * x) + 2);
+        return -(3*Math.pow(x, 4) - 20*Math.pow(x, 3) + 42*Math.pow(x, 2) - (36*x) + 2);
     }
 
     /**
@@ -60,13 +57,14 @@ public class Evolve {
     public List<Cell> generatePop(List<Cell> population) {
         List<Cell> pop = new ArrayList<>();
         parentFitness = fitness;
+        cellsPop = 0;
         if (population.isEmpty()) {
             System.out.println("Iniciando população");
-            cellsPop = 0;
+            
             for (int x = 0; x <= 20; x++) {
                 Cell unity = new Cell();
                 unity.setValue(x);
-                unity.setQuantity(Math.abs(evaluate(x - 10)));
+                unity.setQuantity(evaluate(x - 10));
                 cellsPop += unity.getQuantity();
                 population.add(unity);
             }
@@ -76,6 +74,7 @@ public class Evolve {
             return population;
         } else if (parentFitness == 0) {
             System.out.println("Criando primeira população");
+            
             population.forEach((Cell cell) -> {
 
                 int i = 0;
@@ -83,7 +82,7 @@ public class Evolve {
                     if (pop.size() == 100) {
                         break;
                     } else {
-                        fitness = cell.getQuantity();
+                        cellsPop += cell.getQuantity();
                         pop.add(cell);
                         i++;
                     }
@@ -91,15 +90,36 @@ public class Evolve {
 //                    System.out.println(i);
 
             });
-            fitness = fitness / pop.size();
+            fitness = cellsPop / pop.size();
             System.out.println(fitness);
-        } else {
+        } else if(population.size()%2!=0){
+            System.out.println("Gerando novos individuos.");
+            population.forEach(cell->{
+                cellsPop+=cell.getQuantity();
+            });
+            population.forEach(cell->{
+                cell.setWeight(-cellWeight(cell.getQuantity()));
+//                System.out.println("Populaçao: "+cellsPop+
+//                        " probabilidade de individuo "+cell.getValue()+
+//                        ": "+cell.getWeight());
+                for(int x=0;x<(cell.getWeight()*100);x++){
+                    if(pop.size()==100)
+                        break;
+                    pop.add(cell);
+                }
+            });
+            cellsPop=0;
+            pop.forEach(cell->{
+                cellsPop+=cell.getQuantity();
+            });
+            fitness=cellsPop/pop.size();
+        }else {
             System.out.println("Criando proxima geração");
 //            System.out.println(population.size());
             Random r = new Random();
             byte[] unity1, unity2;
             int pos;
-            while (population.size() >= 10) {
+            while (population.size() > 0) {
                 if (population.size() == 0) {
                     pos = 0;
                 } else {
@@ -123,19 +143,19 @@ public class Evolve {
                 population.remove(pos);
 //                System.out.println(bb.wrap(unity2).getInt());
                 for (int i = 0; i < 2; i++) {
-                    pos = r.nextInt(4);
-                    byte aux = unity1[pos];
-                    unity1[pos] = unity2[pos];
-                    unity2[pos] = aux;
+//                    pos = r.nextInt(4);
+                    byte aux = unity1[i];
+                    unity1[i] = unity2[i+1];
+                    unity2[i+1] = aux;
                 }
                 Cell unity = new Cell();
                 unity.setValue(bb.wrap(unity1).getInt());
-                unity.setQuantity(Math.abs(evaluate(unity.getValue() - 10)));
+                unity.setQuantity(evaluate(unity.getValue() - 10));
                 cellsPop += unity.getQuantity();
                 pop.add(unity);
                 unity = new Cell();
                 unity.setValue(bb.wrap(unity2).getInt());
-                unity.setQuantity(Math.abs(evaluate(unity.getValue() - 10)));
+                unity.setQuantity(evaluate(unity.getValue() - 10));
                 cellsPop += unity.getQuantity();
                 pop.add(unity);
             }
@@ -160,6 +180,7 @@ public class Evolve {
             variacao =variacao+Math.pow(cell.getQuantity()-fitness, 2);
         });
         variacao=variacao/pop.size();
+//        return Math.sqrt(fitness/pop.size());
         return Math.sqrt(variacao);
     }
 
