@@ -22,6 +22,7 @@ public class Evolve {
     private double fitness;
     private double cellsPop;
     double variacao=0;
+    boolean next;
 
     public static Evolve getInstance() {
         if (instance == null) {
@@ -119,11 +120,16 @@ public class Evolve {
             Random r = new Random();
             byte[] unity1, unity2;
             int pos;
-            while (population.size() > 0) {
+            while (population.size() > 2) {
                 if (population.size() == 0) {
                     pos = 0;
                 } else {
                     pos = r.nextInt(population.size());
+                }
+                for(Cell c : population){
+                    if(c.getQuantity()>population.get(pos).getQuantity()){
+                        pos = r.nextInt(population.size()); 
+                    }
                 }
                 ByteBuffer bb = ByteBuffer.allocate(Integer.BYTES);
                 bb.order(ByteOrder.BIG_ENDIAN);
@@ -135,6 +141,11 @@ public class Evolve {
                     pos = 0;
                 } else {
                     pos = r.nextInt(population.size());
+                }
+                for(Cell c : population){
+                    if(c.getQuantity()>population.get(pos).getQuantity()){
+                        pos = r.nextInt(population.size()); 
+                    }
                 }
                 bb = ByteBuffer.allocate(Integer.BYTES);
                 bb.order(ByteOrder.BIG_ENDIAN);
